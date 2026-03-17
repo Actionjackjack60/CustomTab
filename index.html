@@ -109,10 +109,9 @@ document.getElementById("quote").textContent=quotes[Math.floor(Math.random()*quo
 // --- Weather ---
 const weatherBtn = document.getElementById("enableWeatherBtn");
 const weatherDiv = document.getElementById("weather");
-let weatherDetailsVisible = false;
 let lastWeatherData = null;
 
-// Load weather automatically if previously allowed
+// Auto-load if previously enabled
 if(localStorage.getItem("weatherEnabled")==="true") loadWeather();
 
 async function loadWeather() {
@@ -120,7 +119,7 @@ async function loadWeather() {
     weatherBtn.disabled = true;
     weatherBtn.textContent = "Loading...";
 
-    let latitude = 40.7128; // fallback
+    let latitude = 40.7128;
     let longitude = -74.0060;
 
     if(navigator.geolocation) {
@@ -142,12 +141,11 @@ async function loadWeather() {
 
 async function fetchWeather(lat, lon) {
     try {
-        // 1. Get current weather
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&temperature_unit=fahrenheit&timezone=auto`;
-        const weatherRes = await fetch(weatherUrl);
-        const weatherData = await weatherRes.json();
-        const temp = Math.round(weatherData.current.temperature_2m);
-        const code = weatherData.current.weathercode;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&temperature_unit=fahrenheit&timezone=auto`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const temp = Math.round(data.current.temperature_2m);
+        const code = data.current.weathercode;
 
         const map = {
             0:"☀️ Clear",
@@ -161,37 +159,15 @@ async function fetchWeather(lat, lon) {
             80:"🌦️ Showers",
             95:"⛈️ Storm"
         };
-        const text = map[code]||"❓ Unknown";
 
-        // 2. Reverse geocode to get city
-        let cityName = "";
-        try {
-            const geoUrl = `https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}`;
-            const geoRes = await fetch(geoUrl);
-            const geoData = await geoRes.json();
-            cityName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || "";
-        } catch {}
-        
-        lastWeatherData = { temp, text, city: cityName };
-        weatherDiv.textContent = `${text} • ${temp}°F` + (cityName?` • ${cityName}`:"");
+        lastWeatherData = { temp, text: map[code]||"❓ Unknown" };
+        weatherDiv.textContent = `${map[code]||"❓ Unknown"} • ${temp}°F`;
     } catch {
         weatherDiv.textContent = "Weather fetch failed";
     }
 }
 
 weatherBtn.addEventListener("click", loadWeather);
-
-// Click weather to toggle details
-weatherDiv.addEventListener("click",()=>{
-    if(!lastWeatherData) return;
-    const { temp, text, city } = lastWeatherData;
-    if(weatherDetailsVisible){
-        weatherDiv.textContent = `${text} • ${temp}°F` + (city?` • ${city}`:"");
-    } else {
-        weatherDiv.textContent = `${text} • ${temp}°F` + (city?` • ${city} (Live)`:" (Live)");
-    }
-    weatherDetailsVisible = !weatherDetailsVisible;
-});
 
 // Refresh every 5 min
 setInterval(()=>{ if(!weatherBtn.style.display || weatherBtn.style.display === "none") loadWeather(); },300000);
