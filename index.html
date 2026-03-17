@@ -14,68 +14,65 @@
     --topbar: #1e3a8a;
     --toptext: white;
 }
-
 .light {
     --bg: #f5f5f5;
     --text: #111;
-    --box: #ffffff;
+    --box: #fff;
     --border: #111;
     --topbar: #3b82f6;
     --toptext: #111;
 }
-
-* { margin:0; padding:0; box-sizing:border-box; font-family:'Lato', sans-serif; }
-
+* {margin:0; padding:0; box-sizing:border-box; font-family:'Lato', sans-serif;}
 body {
     background: var(--bg);
     color: var(--text);
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition: background 0.3s, color 0.3s;
+    display:flex;
+    flex-direction:column;
+    transition: background 0.3s,color 0.3s;
 }
 
 /* Top bar */
 .top-bar {
-    width: 100%;
-    padding: 18px 22px;
+    width:100%;
+    padding:18px 22px;
     background: var(--topbar);
-    display: flex;
-    justify-content: space-between;
-    font-size: 17px;
-    font-weight: 600;
+    display:flex;
+    justify-content:space-between;
+    font-size:17px;
+    font-weight:600;
     color: var(--toptext);
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.3s,color 0.3s;
 }
 
 /* Center content */
 .container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
 }
-
 h1 { font-size:48px; }
 
 /* Weather */
 .weather {
-    font-size: 16px;
-    opacity: 0.9;
-    margin-bottom: 5px;
-    cursor: pointer;
-    transition: opacity 0.25s;
+    font-size:16px;
+    opacity:0.9;
+    margin-bottom:5px;
+    cursor:pointer;
+    text-align:center;
+    white-space:pre-line;
 }
 .weather button {
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 2px solid var(--border);
+    padding:6px 14px;
+    border-radius:999px;
+    border:2px solid var(--border);
     background: var(--box);
     color: var(--text);
-    cursor: pointer;
-    transition: background 0.3s, color 0.3s;
+    cursor:pointer;
+    transition:background 0.3s,color 0.3s;
 }
 
 /* Search */
@@ -89,7 +86,7 @@ input {
     color: var(--text);
     font-size:16px;
     outline:none;
-    transition: background 0.3s, color 0.3s, box-shadow 0.25s;
+    transition:background 0.3s,color 0.3s,box-shadow 0.25s;
 }
 input:focus { box-shadow:0 0 12px rgba(255,255,255,0.3); }
 .light input:focus { box-shadow:0 0 12px rgba(0,0,0,0.2); }
@@ -110,27 +107,22 @@ button:hover { opacity:0.85; }
 
 /* Toggle bottom-right */
 .toggle {
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
+    position:fixed;
+    bottom:15px;
+    right:15px;
+    cursor:pointer;
+    width:28px;
+    height:28px;
 }
-.toggle img {
-    width: 28px;
-    height: 28px;
-    transition: filter 0.3s;
-}
-body:not(.light) .toggle img { filter: invert(1); }
+.toggle img { width:28px; height:28px; transition:filter 0.3s; }
+body:not(.light) .toggle img { filter:invert(1); }
 
 /* Quote */
-.quote { font-size: 14px; opacity:0.8; margin-top:5px; text-align:center; max-width:400px; white-space:pre-line; }
+.quote { font-size:14px; opacity:0.8; margin-top:5px; text-align:center; max-width:400px; }
 </style>
 </head>
 
 <body>
-
 <div class="top-bar">
     <div id="date"></div>
     <div id="time"></div>
@@ -162,21 +154,18 @@ body:not(.light) .toggle img { filter: invert(1); }
 
 <script>
 // Time
-function updateTime() {
-    const now = new Date();
-    document.getElementById('date').textContent =
-        now.toLocaleDateString('en-US', { month:'2-digit', day:'2-digit', year:'2-digit' });
-    document.getElementById('time').textContent =
-        now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+function updateTime(){
+    const now=new Date();
+    document.getElementById('date').textContent=now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'});
+    document.getElementById('time').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 }
-setInterval(updateTime,1000); updateTime();
+setInterval(updateTime,1000);
+updateTime();
 
 // Theme
-function toggleTheme() {
+function toggleTheme(){
     document.body.classList.toggle("light");
-    localStorage.setItem("theme",
-        document.body.classList.contains("light") ? "light":"dark"
-    );
+    localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
 }
 if(localStorage.getItem("theme")==="light"){ document.body.classList.add("light"); }
 
@@ -184,35 +173,25 @@ if(localStorage.getItem("theme")==="light"){ document.body.classList.add("light"
 function formatQuery(q){ return q.trim().replace(/\s+/g,"+"); }
 function searchGoogle(){ const q=document.getElementById("searchInput").value; if(!q)return; window.open("https://www.google.com/search?q="+formatQuery(q),"_blank"); }
 function askAI(){ const q=document.getElementById("searchInput").value; if(!q)return; window.open("https://chatgpt.com/?q="+formatQuery(q),"_blank"); }
-document.getElementById("searchInput").addEventListener("keydown", e=>{ if(e.key==="Enter") searchGoogle(); });
+document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")searchGoogle();});
 
 // Quotes
-const quotes=[
-    "Believe you can and you're halfway there.",
-    "Do something today that your future self will thank you for.",
-    "Happiness is not by chance, but by choice.",
-    "The best way to get started is to quit talking and begin doing.",
-    "Success is not final, failure is not fatal: It is the courage to continue that counts."
-];
-document.getElementById("quote").textContent = quotes[Math.floor(Math.random()*quotes.length)];
+const quotes=["Believe you can and you're halfway there.","Do something today that your future self will thank you for.","Happiness is not by chance, but by choice.","The best way to get started is to quit talking and begin doing.","Success is not final, failure is not fatal: It is the courage to continue that counts."];
+document.getElementById("quote").textContent=quotes[Math.floor(Math.random()*quotes.length)];
 
 // Weather
+const weatherBtn=document.getElementById("enableWeatherBtn");
+const weatherDiv=document.getElementById("weather");
 let weatherDetailsVisible=false;
 let lastWeatherData=null;
 
-function enableWeather(){ localStorage.setItem("weatherEnabled","true"); loadWeather(); }
-
-document.getElementById("enableWeatherBtn").addEventListener("click",(e)=>{
-    e.stopPropagation(); // prevent div click
-    enableWeather();
-});
-
-async function loadWeather(){
-    const el=document.getElementById("weather");
-    el.textContent="Loading weather...";
+weatherBtn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    weatherBtn.disabled=true;
+    weatherBtn.textContent="Loading...";
     navigator.geolocation.getCurrentPosition(async(pos)=>{
+        const {latitude,longitude}=pos.coords;
         try{
-            const {latitude,longitude}=pos.coords;
             const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
             const res=await fetch(url);
             const data=await res.json();
@@ -224,51 +203,68 @@ async function loadWeather(){
             const wind=Math.round(data.current.windspeed_10m);
             const cityName=`Lat:${latitude.toFixed(1)}, Lon:${longitude.toFixed(1)}`;
 
-            const {text,emoji}=getWeather(code);
+            const map={0:["Clear","☀️"],1:["Mostly Clear","🌤️"],2:["Partly Cloudy","⛅"],3:["Cloudy","☁️"],45:["Fog","🌫️"],51:["Drizzle","🌦️"],61:["Rain","🌧️"],71:["Snow","❄️"],80:["Showers","🌦️"],95:["Storm","⛈️"]};
+            const text=map[code]?map[code][0]:"Unknown";
+            const emoji=map[code]?map[code][1]:"❓";
 
             lastWeatherData={temp,feels,humidity,wind,text,emoji,city:cityName};
 
-            el.textContent=`${emoji} ${temp}°F • ${text} • ${cityName}`;
+            weatherBtn.style.display="none";
+            weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${cityName}`;
         }catch{
-            el.innerHTML='<button id="enableWeatherBtn">Enable Weather</button>';
-            document.getElementById("enableWeatherBtn").addEventListener("click",(e)=>{
-                e.stopPropagation();
-                enableWeather();
-            });
+            weatherBtn.disabled=false;
+            weatherBtn.textContent="Enable Weather";
         }
-    },()=>{
-        el.innerHTML='<button id="enableWeatherBtn">Enable Weather</button>';
-        document.getElementById("enableWeatherBtn").addEventListener("click",(e)=>{
-            e.stopPropagation();
-            enableWeather();
-        });
+    },err=>{
+        weatherBtn.disabled=false;
+        weatherBtn.textContent="Enable Weather";
+        alert("Location access denied. Cannot show weather.");
     });
-}
+});
 
-// Toggle extra weather details
-document.getElementById("weather").addEventListener("click",()=>{
-    if(document.getElementById("enableWeatherBtn")) return;
+// Click weather to toggle details
+weatherDiv.addEventListener("click",()=>{
     if(!lastWeatherData) return;
-    const el=document.getElementById("weather");
+    const {temp,feels,humidity,wind,text,emoji,city}=lastWeatherData;
     if(weatherDetailsVisible){
-        el.textContent=`${lastWeatherData.emoji} ${lastWeatherData.temp}°F • ${lastWeatherData.text} • ${lastWeatherData.city}`;
+        weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${city}`;
     }else{
-        el.textContent=`${lastWeatherData.emoji} ${lastWeatherData.temp}°F • ${lastWeatherData.text} • ${lastWeatherData.city}\nFeels: ${lastWeatherData.feels}°F, Humidity: ${lastWeatherData.humidity}%, Wind: ${lastWeatherData.wind} mph`;
+        weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${city}\nFeels: ${feels}°F, Humidity: ${humidity}%, Wind: ${wind} mph`;
     }
     weatherDetailsVisible=!weatherDetailsVisible;
 });
 
-function getWeather(code){
-    const map={0:["Clear","☀️"],1:["Mostly Clear","🌤️"],2:["Partly Cloudy","⛅"],3:["Cloudy","☁️"],45:["Fog","🌫️"],51:["Drizzle","🌦️"],61:["Rain","🌧️"],71:["Snow","❄️"],80:["Showers","🌦️"],95:["Storm","⛈️"]};
-    return map[code]?{text:map[code][0],emoji:map[code][1]}:{text:"Unknown",emoji:"❓"};
+// Auto-refresh every 5 minutes
+setInterval(()=>{if(lastWeatherData){weatherBtn.style.display="none";loadWeather();}},300000);
+
+function loadWeather(){
+    // reload weather using last position if available
+    if(!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async(pos)=>{
+        const {latitude,longitude}=pos.coords;
+        try{
+            const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
+            const res=await fetch(url);
+            const data=await res.json();
+
+            const temp=Math.round(data.current.temperature_2m);
+            const code=data.current.weathercode;
+            const feels=Math.round(data.current.apparent_temperature_2m);
+            const humidity=data.current.relativehumidity_2m;
+            const wind=Math.round(data.current.windspeed_10m);
+            const cityName=`Lat:${latitude.toFixed(1)}, Lon:${longitude.toFixed(1)}`;
+
+            const map={0:["Clear","☀️"],1:["Mostly Clear","🌤️"],2:["Partly Cloudy","⛅"],3:["Cloudy","☁️"],45:["Fog","🌫️"],51:["Drizzle","🌦️"],61:["Rain","🌧️"],71:["Snow","❄️"],80:["Showers","🌦️"],95:["Storm","⛈️"]};
+            const text=map[code]?map[code][0]:"Unknown";
+            const emoji=map[code]?map[code][1]:"❓";
+
+            lastWeatherData={temp,feels,humidity,wind,text,emoji,city:cityName};
+            weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${cityName}`;
+        }catch{
+            console.log("Weather refresh failed");
+        }
+    });
 }
-
-// Load if previously enabled
-if(localStorage.getItem("weatherEnabled")==="true"){ loadWeather(); }
-
-// Refresh weather every 5 minutes
-setInterval(()=>{ if(localStorage.getItem("weatherEnabled")==="true"){ loadWeather(); } },300000);
-
 </script>
 </body>
 </html>
