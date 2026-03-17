@@ -28,12 +28,12 @@ body { background: var(--bg); color: var(--text); height:100vh; display:flex; fl
 h1 { font-size:48px; }
 .weather { font-size:16px; opacity:0.9; margin-bottom:5px; cursor:pointer; text-align:center; white-space:pre-line; }
 .weather button { padding:6px 14px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); cursor:pointer; transition:background 0.3s,color 0.3s; }
-.search-container { position:relative; width:400px; max-width:90%; display:flex; gap:5px; align-items:center; }
-input { flex:1; padding:14px 20px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); font-size:16px; outline:none; transition:background 0.3s,color 0.3s,box-shadow 0.25s; }
+.search-container { position:relative; width:400px; max-width:90%; }
+input { width:100%; padding:14px 45px 14px 20px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); font-size:16px; outline:none; transition:background 0.3s,color 0.3s,box-shadow 0.25s; }
 input:focus { box-shadow:0 0 12px rgba(255,255,255,0.3); }
 .light input:focus { box-shadow:0 0 12px rgba(0,0,0,0.2); }
-.search-icon { position:absolute; right:15px; top:50%; transform:translateY(-50%); }
-.buttons { display:flex; gap:15px; }
+.search-icon { position:absolute; right:15px; top:50%; transform:translateY(-50%); pointer-events:none; }
+.buttons { display:flex; gap:15px; margin-top:10px; }
 button { padding:10px 20px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); cursor:pointer; transition: background 0.3s,color 0.3s,opacity 0.25s; }
 button:hover { opacity:0.85; }
 .toggle { position:fixed; bottom:15px; right:15px; cursor:pointer; width:28px; height:28px; }
@@ -60,15 +60,16 @@ body:not(.light) .toggle img { filter:invert(1); }
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Ask anything...">
-        <button onclick="addFavorite()">☆</button>
+        <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="buttons">
+        <button onclick="searchGoogle()">Search</button>
+        <button onclick="askAI()">Ask AI</button>
+        <button onclick="addFavorite()">Add Favorite</button>
     </div>
 
     <div class="favorites" id="favorites"></div>
-
-    <div class="buttons">
-        <button onclick="askAI()">Ask AI</button>
-        <button onclick="searchGoogle()">Search</button>
-    </div>
 
     <div class="quote" id="quote"></div>
 </div>
@@ -109,7 +110,6 @@ const weatherBtn = document.getElementById("enableWeatherBtn");
 const weatherDiv = document.getElementById("weather");
 let lastWeatherData = null;
 if(localStorage.getItem("weatherEnabled")==="true") loadWeather();
-
 async function loadWeather() {
     localStorage.setItem("weatherEnabled","true");
     weatherBtn.disabled = true;
@@ -136,26 +136,27 @@ async function fetchWeather(lat, lon){
 weatherBtn.addEventListener("click", loadWeather);
 setInterval(()=>{ if(!weatherBtn.style.display || weatherBtn.style.display==="none") loadWeather(); },300000);
 
-// --- Favorites ---
+// --- Favorites for Websites ---
 const favDiv=document.getElementById("favorites");
 let favorites=JSON.parse(localStorage.getItem("favorites")||"[]");
 
 function renderFavorites(){
     favDiv.innerHTML="";
-    favorites.forEach((f,index)=>{
+    favorites.forEach(f=>{
         const btn=document.createElement("button");
         btn.className="favorite-btn";
         btn.textContent=f.name;
         btn.onclick=()=>window.open(f.url,"_blank");
-        btn.title="Click to open";
         favDiv.appendChild(btn);
     });
 }
+
 function addFavorite(){
-    const query=document.getElementById("searchInput").value.trim();
-    if(!query) return;
-    const url="https://www.google.com/search?q="+formatQuery(query);
-    favorites.push({name:query,url});
+    const val=document.getElementById("searchInput").value.trim();
+    if(!val) return;
+    let url = val;
+    if(!/^https?:\/\//i.test(url)) url="https://"+url;
+    favorites.push({name:val,url});
     localStorage.setItem("favorites",JSON.stringify(favorites));
     renderFavorites();
 }
