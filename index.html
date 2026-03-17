@@ -47,6 +47,9 @@ body:not(.light) .toggle img { filter:invert(1); }
 .menu { position:absolute; background:var(--box); border:2px solid var(--border); border-radius:10px; padding:10px; display:none; flex-direction:column; gap:8px; z-index:10; }
 .menu input { width:220px; padding:6px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text); }
 .menu button { width:100%; }
+/* Cookie banner */
+.cookie-banner { position:fixed; bottom:0; left:0; width:100%; background:var(--box); color:var(--text); border-top:2px solid var(--border); padding:15px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; z-index:20; font-size:14px; }
+.cookie-banner button { margin-left:10px; }
 </style>
 </head>
 <body>
@@ -87,6 +90,21 @@ body:not(.light) .toggle img { filter:invert(1); }
     <input type="text" id="favName" placeholder="Name">
     <input type="text" id="favURL" placeholder="URL (https://...)">
     <button id="saveFav">Save Favorite</button>
+</div>
+
+<!-- Cookie banner -->
+<div class="cookie-banner" id="cookieBanner">
+    <div>
+        This website uses <strong>local storage</strong> in your browser to save preferences such as:
+        <ul style="margin:5px 0 0 15px;padding:0;">
+            <li>Light or dark theme</li>
+            <li>Weather settings</li>
+            <li>Favorite websites</li>
+        </ul>
+        No personal data is sent to any server, and we <strong>do not use tracking cookies or third-party analytics</strong>.<br>
+        By continuing to use this site, you consent to the use of local storage for these features. You can clear saved preferences in your browser.
+    </div>
+    <button id="acceptCookies">Accept</button>
 </div>
 
 <script>
@@ -200,6 +218,17 @@ document.addEventListener("click",(e)=>{
     if(!favMenu.contains(e.target) && e.target!==addFavBtn){
         favMenu.style.display="none";
     }
+});
+
+// --- Cookie banner ---
+const cookieBanner=document.getElementById("cookieBanner");
+const acceptCookies=document.getElementById("acceptCookies");
+if(localStorage.getItem("cookieConsent")==="true"){
+    cookieBanner.style.display="none";
+}
+acceptCookies.addEventListener("click",()=>{
+    localStorage.setItem("cookieConsent","true");
+    cookieBanner.style.display="none";
 });
 </script>
 </body>
