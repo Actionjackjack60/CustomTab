@@ -178,20 +178,27 @@ document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==
 const quotes=["Believe you can and you're halfway there.","Do something today that your future self will thank you for.","Happiness is not by chance, but by choice.","The best way to get started is to quit talking and begin doing.","Success is not final, failure is not fatal: It is the courage to continue that counts."];
 document.getElementById("quote").textContent=quotes[Math.floor(Math.random()*quotes.length)];
 
-// Weather (simpler, only lat/lon)
+// Weather
 const weatherBtn = document.getElementById("enableWeatherBtn");
 const weatherDiv = document.getElementById("weather");
 let weatherDetailsVisible = false;
 let lastWeatherData = null;
 
-weatherBtn.addEventListener("click", async () => {
+async function loadWeather() {
     weatherBtn.disabled = true;
     weatherBtn.textContent = "Loading...";
+
+    let latitude=40.7128, longitude=-74.0060; // fallback
     try {
         const pos = await new Promise((resolve,reject)=> navigator.geolocation.getCurrentPosition(resolve,reject));
-        const { latitude, longitude } = pos.coords;
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+    } catch {
+        // fallback will be used
+    }
 
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
+    try {
+        const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -212,9 +219,11 @@ weatherBtn.addEventListener("click", async () => {
     } catch {
         weatherBtn.disabled = false;
         weatherBtn.textContent = "Enable Weather";
-        alert("Could not get location. Make sure you allowed it in the browser.");
+        alert("Weather fetch failed");
     }
-});
+}
+
+weatherBtn.addEventListener("click", loadWeather);
 
 // Click weather to toggle details
 weatherDiv.addEventListener("click", () => {
@@ -229,7 +238,7 @@ weatherDiv.addEventListener("click", () => {
 });
 
 // Refresh every 5 min
-setInterval(()=>{ if(lastWeatherData){ weatherBtn.style.display="none"; weatherBtn.click(); } },300000);
+setInterval(()=>{ if(lastWeatherData){ weatherBtn.style.display="none"; loadWeather(); } },300000);
 </script>
 </body>
 </html>
