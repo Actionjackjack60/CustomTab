@@ -188,11 +188,9 @@ async function loadWeather() {
     weatherBtn.disabled = true;
     weatherBtn.textContent = "Loading...";
 
-    // Fallback coords (NYC)
-    let latitude = 40.7128;
+    let latitude = 40.7128; // fallback
     let longitude = -74.0060;
 
-    // Try geolocation, silently fallback
     if(navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             pos => {
@@ -200,10 +198,7 @@ async function loadWeather() {
                 longitude = pos.coords.longitude;
                 fetchWeather(latitude, longitude);
             },
-            err => {
-                console.log("Geolocation failed or blocked, using fallback.");
-                fetchWeather(latitude, longitude);
-            },
+            err => fetchWeather(latitude, longitude),
             {timeout:5000}
         );
     } else {
@@ -236,7 +231,7 @@ async function fetchWeather(lat, lon) {
         };
 
         lastWeatherData = { temp, text: map[code]||"❓ Unknown", emoji: (map[code]||"❓")[0] };
-        weatherDiv.textContent = `${map[code]||"❓ Unknown"} • ${temp}°F • Lat:${lat.toFixed(1)}, Lon:${lon.toFixed(1)}`;
+        weatherDiv.textContent = `${map[code]||"❓ Unknown"} • ${temp}°F`;
     } catch {
         weatherDiv.textContent = "Weather fetch failed";
     }
@@ -244,19 +239,19 @@ async function fetchWeather(lat, lon) {
 
 weatherBtn.addEventListener("click", loadWeather);
 
-// --- Click weather to toggle details ---
+// Click weather to toggle details
 weatherDiv.addEventListener("click",()=>{
     if(!lastWeatherData) return;
-    const { temp, text, emoji } = lastWeatherData;
+    const { temp, text } = lastWeatherData;
     if(weatherDetailsVisible){
         weatherDiv.textContent = `${text} • ${temp}°F`;
     } else {
-        weatherDiv.textContent = `${text} • ${temp}°F\nCoordinates shown`;
+        weatherDiv.textContent = `${text} • ${temp}°F (Live)`;
     }
     weatherDetailsVisible = !weatherDetailsVisible;
 });
 
-// --- Refresh every 5 min ---
+// Refresh every 5 min
 setInterval(()=>{ if(!weatherBtn.style.display || weatherBtn.style.display === "none") loadWeather(); },300000);
 </script>
 </body>
