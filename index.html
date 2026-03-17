@@ -37,6 +37,7 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    transition: background 0.3s, color 0.3s;
 }
 
 /* Top bar */
@@ -49,6 +50,7 @@ body {
     font-size: 17px;
     font-weight: 600;
     color: var(--toptext);
+    transition: background 0.3s, color 0.3s;
 }
 
 /* Center content */
@@ -79,6 +81,7 @@ h1 {
     background: var(--box);
     color: var(--text);
     cursor: pointer;
+    transition: background 0.3s, color 0.3s;
 }
 
 /* Search */
@@ -97,6 +100,7 @@ input {
     color: var(--text);
     font-size: 16px;
     outline: none;
+    transition: background 0.3s, color 0.3s, box-shadow 0.25s;
 }
 
 input:focus {
@@ -127,6 +131,7 @@ button {
     background: var(--box);
     color: var(--text);
     cursor: pointer;
+    transition: background 0.3s, color 0.3s, opacity 0.25s;
 }
 
 button:hover {
@@ -141,6 +146,17 @@ button:hover {
     cursor: pointer;
     width: 28px;
     height: 28px;
+}
+
+.toggle img {
+    width: 28px;
+    height: 28px;
+    transition: filter 0.3s;
+}
+
+/* Invert icon in dark mode */
+body:not(.light) .toggle img {
+    filter: invert(1);
 }
 </style>
 </head>
@@ -171,7 +187,7 @@ button:hover {
 </div>
 
 <div class="toggle" onclick="toggleTheme()">
-    <img src="lightdark.png" alt="Toggle Theme" style="width:28px; height:28px;">
+    <img src="lightdark.png" alt="Toggle Theme">
 </div>
 
 <script>
@@ -275,7 +291,7 @@ setInterval(() => {
     if (localStorage.getItem("weatherEnabled") === "true") {
         loadWeather();
     }
-}, 300000); // 300,000ms = 5 min
+}, 300000); // 5 min
 </script>
 
 </body>
