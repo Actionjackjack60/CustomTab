@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CustomTab</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #0d0d0f;
+    --text: white;
+    --box: #111;
+    --border: white;
+    --topbar: #1e3a8a;
+    --toptext: white;
+}
+
+.light {
+    --bg: #f5f5f5;
+    --text: #111;
+    --box: #ffffff;
+    --border: #111;
+    --topbar: #3b82f6;
+    --toptext: #111;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Lato', sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top bar */
+.top-bar {
+    width: 100%;
+    padding: 18px 22px;
+    background: var(--topbar);
+    display: flex;
+    justify-content: space-between;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--toptext);
+}
+
+/* Center content */
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+h1 {
+    font-size: 48px;
+}
+
+/* Weather */
+.weather {
+    font-size: 16px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.weather button {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--box);
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* Search */
+.search-container {
+    position: relative;
+    width: 400px;
+    max-width: 90%;
+}
+
+input {
+    width: 100%;
+    padding: 14px 45px 14px 20px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--box);
+    color: var(--text);
+    font-size: 16px;
+    outline: none;
+}
+
+input:focus {
+    box-shadow: 0 0 12px rgba(255,255,255,0.3);
+}
+
+.light input:focus {
+    box-shadow: 0 0 12px rgba(0,0,0,0.2);
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Buttons */
+.buttons {
+    display: flex;
+    gap: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--box);
+    color: var(--text);
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+/* Toggle bottom-right */
+.toggle {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+    <div id="date"></div>
+    <div id="time"></div>
+</div>
+
+<div class="container">
+    <h1>CustomTab</h1>
+
+    <div class="weather" id="weather">
+        <button onclick="enableWeather()">Enable Weather</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Ask anything...">
+        <span class="search-icon">🔍</span>
+    </div>
+
+    <div class="buttons">
+        <button onclick="askAI()">Ask AI</button>
+        <button onclick="searchGoogle()">Search</button>
+    </div>
+</div>
+
+<div class="toggle" onclick="toggleTheme()">
+    <img src="lightdark.png" alt="Toggle Theme" style="width:28px; height:28px;">
+</div>
+
+<script>
+// Time
+function updateTime() {
+    const now = new Date();
+    document.getElementById('date').textContent =
+        now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
+    document.getElementById('time').textContent =
+        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// Theme
+function toggleTheme() {
+    document.body.classList.toggle("light");
+    localStorage.setItem("theme",
+        document.body.classList.contains("light") ? "light" : "dark"
+    );
+}
+if (localStorage.getItem("theme") === "light") {
+    document.body.classList.add("light");
+}
+
+// Search
+function formatQuery(q) {
+    return q.trim().replace(/\s+/g, "+");
+}
+
+function searchGoogle() {
+    const q = document.getElementById("searchInput").value;
+    if (!q) return;
+    window.open("https://www.google.com/search?q=" + formatQuery(q), "_blank");
+}
+
+function askAI() {
+    const q = document.getElementById("searchInput").value;
+    if (!q) return;
+    window.open("https://chatgpt.com/?q=" + formatQuery(q), "_blank");
+}
+
+document.getElementById("searchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") searchGoogle();
+});
+
+// Weather
+function enableWeather() {
+    localStorage.setItem("weatherEnabled", "true");
+    loadWeather();
+}
+
+async function loadWeather() {
+    const el = document.getElementById("weather");
+    el.textContent = "Loading weather...";
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+            const { latitude, longitude } = pos.coords;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode&temperature_unit=fahrenheit&timezone=auto`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            const temp = Math.round(data.current.temperature_2m);
+            const code = data.current.weathercode;
+
+            const { text, emoji } = getWeather(code);
+            el.textContent = `${emoji} ${temp}°F • ${text}`;
+        } catch {
+            el.innerHTML = '<button onclick="enableWeather()">Enable Weather</button>';
+        }
+    }, () => {
+        el.innerHTML = '<button onclick="enableWeather()">Enable Weather</button>';
+    });
+}
+
+function getWeather(code) {
+    const map = {
+        0: ["Clear", "☀️"],
+        1: ["Mostly Clear", "🌤️"],
+        2: ["Partly Cloudy", "⛅"],
+        3: ["Cloudy", "☁️"],
+        45: ["Fog", "🌫️"],
+        51: ["Drizzle", "🌦️"],
+        61: ["Rain", "🌧️"],
+        71: ["Snow", "❄️"],
+        80: ["Showers", "🌦️"],
+        95: ["Storm", "⛈️"]
+    };
+    return map[code] ? { text: map[code][0], emoji: map[code][1] }
+                     : { text: "Unknown", emoji: "❓" };
+}
+
+// Load weather if previously enabled
+if (localStorage.getItem("weatherEnabled") === "true") {
+    loadWeather();
+}
+
+// Refresh weather every 5 minutes
+setInterval(() => {
+    if (localStorage.getItem("weatherEnabled") === "true") {
+        loadWeather();
+    }
+}, 300000); // 300,000ms = 5 min
+</script>
+
+</body>
+</html>
