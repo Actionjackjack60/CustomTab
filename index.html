@@ -41,8 +41,12 @@ button:hover { opacity:0.85; }
 body:not(.light) .toggle img { filter:invert(1); }
 .quote { font-size:14px; opacity:0.8; margin-top:5px; text-align:center; max-width:400px; }
 .favorites { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:10px; max-width:90%; }
-.favorite-btn { padding:6px 14px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); cursor:pointer; transition: background 0.3s,color 0.3s; }
+.favorite-btn { padding:6px 14px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); cursor:pointer; position:relative; transition: background 0.3s,color 0.3s; }
 .favorite-btn:hover { opacity:0.85; }
+.remove-btn { position:absolute; top:-6px; right:-6px; background:red; color:white; border:none; border-radius:50%; width:18px; height:18px; font-size:12px; cursor:pointer; line-height:16px; padding:0; }
+.menu { position:absolute; background:var(--box); border:2px solid var(--border); border-radius:10px; padding:10px; display:none; flex-direction:column; gap:8px; z-index:10; }
+.menu input { width:220px; padding:6px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text); }
+.menu button { width:100%; }
 </style>
 </head>
 <body>
@@ -66,7 +70,7 @@ body:not(.light) .toggle img { filter:invert(1); }
     <div class="buttons">
         <button onclick="searchGoogle()">Search</button>
         <button onclick="askAI()">Ask AI</button>
-        <button onclick="addFavorite()">Add Favorite</button>
+        <button id="addFavBtn">Add Favorite</button>
     </div>
 
     <div class="favorites" id="favorites"></div>
@@ -76,6 +80,13 @@ body:not(.light) .toggle img { filter:invert(1); }
 
 <div class="toggle" onclick="toggleTheme()">
     <img src="lightdark.png" alt="Toggle Theme">
+</div>
+
+<!-- Mini menu for adding favorites -->
+<div class="menu" id="favMenu">
+    <input type="text" id="favName" placeholder="Name">
+    <input type="text" id="favURL" placeholder="URL (https://...)">
+    <button id="saveFav">Save Favorite</button>
 </div>
 
 <script>
@@ -136,31 +147,60 @@ async function fetchWeather(lat, lon){
 weatherBtn.addEventListener("click", loadWeather);
 setInterval(()=>{ if(!weatherBtn.style.display || weatherBtn.style.display==="none") loadWeather(); },300000);
 
-// --- Favorites for Websites ---
+// --- Favorites ---
 const favDiv=document.getElementById("favorites");
 let favorites=JSON.parse(localStorage.getItem("favorites")||"[]");
 
 function renderFavorites(){
     favDiv.innerHTML="";
-    favorites.forEach(f=>{
-        const btn=document.createElement("button");
+    favorites.forEach((f,index)=>{
+        const btn=document.createElement("div");
         btn.className="favorite-btn";
         btn.textContent=f.name;
         btn.onclick=()=>window.open(f.url,"_blank");
+
+        const removeBtn=document.createElement("button");
+        removeBtn.className="remove-btn";
+        removeBtn.textContent="×";
+        removeBtn.onclick=(e)=>{
+            e.stopPropagation();
+            favorites.splice(index,1);
+            localStorage.setItem("favorites",JSON.stringify(favorites));
+            renderFavorites();
+        };
+
+        btn.appendChild(removeBtn);
         favDiv.appendChild(btn);
     });
 }
+renderFavorites();
 
-function addFavorite(){
-    const val=document.getElementById("searchInput").value.trim();
-    if(!val) return;
-    let url = val;
+// --- Favorite menu ---
+const favMenu=document.getElementById("favMenu");
+const addFavBtn=document.getElementById("addFavBtn");
+const saveFavBtn=document.getElementById("saveFav");
+addFavBtn.addEventListener("click",()=>{
+    favMenu.style.display="flex";
+    favMenu.style.top=(addFavBtn.getBoundingClientRect().bottom+5)+"px";
+    favMenu.style.left=(addFavBtn.getBoundingClientRect().left)+"px";
+});
+saveFavBtn.addEventListener("click",()=>{
+    const name=document.getElementById("favName").value.trim();
+    let url=document.getElementById("favURL").value.trim();
+    if(!name || !url) return;
     if(!/^https?:\/\//i.test(url)) url="https://"+url;
-    favorites.push({name:val,url});
+    favorites.push({name,url});
     localStorage.setItem("favorites",JSON.stringify(favorites));
     renderFavorites();
-}
-renderFavorites();
+    favMenu.style.display="none";
+    document.getElementById("favName").value="";
+    document.getElementById("favURL").value="";
+});
+document.addEventListener("click",(e)=>{
+    if(!favMenu.contains(e.target) && e.target!==addFavBtn){
+        favMenu.style.display="none";
+    }
+});
 </script>
 </body>
 </html>
