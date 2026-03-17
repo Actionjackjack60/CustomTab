@@ -184,7 +184,11 @@ const weatherDiv = document.getElementById("weather");
 let weatherDetailsVisible = false;
 let lastWeatherData = null;
 
+// Load weather if previously allowed
+if(localStorage.getItem("weatherEnabled")==="true") loadWeather();
+
 async function loadWeather() {
+    localStorage.setItem("weatherEnabled","true");
     weatherBtn.disabled = true;
     weatherBtn.textContent = "Loading...";
 
