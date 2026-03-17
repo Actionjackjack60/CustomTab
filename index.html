@@ -30,97 +30,25 @@ body {
     flex-direction:column;
     transition: background 0.3s,color 0.3s;
 }
-
-/* Top bar */
-.top-bar {
-    width:100%;
-    padding:18px 22px;
-    background: var(--topbar);
-    display:flex;
-    justify-content:space-between;
-    font-size:17px;
-    font-weight:600;
-    color: var(--toptext);
-    transition: background 0.3s,color 0.3s;
-}
-
-/* Center content */
-.container {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:15px;
-}
+.top-bar { width:100%; padding:18px 22px; background: var(--topbar); display:flex; justify-content:space-between; font-size:17px; font-weight:600; color: var(--toptext); transition: background 0.3s,color 0.3s; }
+.container { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:15px; }
 h1 { font-size:48px; }
-
-/* Weather */
-.weather {
-    font-size:16px;
-    opacity:0.9;
-    margin-bottom:5px;
-    cursor:pointer;
-    text-align:center;
-    white-space:pre-line;
-}
-.weather button {
-    padding:6px 14px;
-    border-radius:999px;
-    border:2px solid var(--border);
-    background: var(--box);
-    color: var(--text);
-    cursor:pointer;
-    transition:background 0.3s,color 0.3s;
-}
-
-/* Search */
+.weather { font-size:16px; opacity:0.9; margin-bottom:5px; cursor:pointer; text-align:center; white-space:pre-line; }
+.weather button { padding:6px 14px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); cursor:pointer; transition:background 0.3s,color 0.3s; }
 .search-container { position:relative; width:400px; max-width:90%; }
-input {
-    width:100%;
-    padding:14px 45px 14px 20px;
-    border-radius:999px;
-    border:2px solid var(--border);
-    background: var(--box);
-    color: var(--text);
-    font-size:16px;
-    outline:none;
-    transition:background 0.3s,color 0.3s,box-shadow 0.25s;
-}
+input { width:100%; padding:14px 45px 14px 20px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); font-size:16px; outline:none; transition:background 0.3s,color 0.3s,box-shadow 0.25s; }
 input:focus { box-shadow:0 0 12px rgba(255,255,255,0.3); }
 .light input:focus { box-shadow:0 0 12px rgba(0,0,0,0.2); }
 .search-icon { position:absolute; right:15px; top:50%; transform:translateY(-50%); }
-
-/* Buttons */
 .buttons { display:flex; gap:15px; }
-button {
-    padding:10px 20px;
-    border-radius:999px;
-    border:2px solid var(--border);
-    background: var(--box);
-    color: var(--text);
-    cursor:pointer;
-    transition: background 0.3s,color 0.3s,opacity 0.25s;
-}
+button { padding:10px 20px; border-radius:999px; border:2px solid var(--border); background: var(--box); color: var(--text); cursor:pointer; transition: background 0.3s,color 0.3s,opacity 0.25s; }
 button:hover { opacity:0.85; }
-
-/* Toggle bottom-right */
-.toggle {
-    position:fixed;
-    bottom:15px;
-    right:15px;
-    cursor:pointer;
-    width:28px;
-    height:28px;
-}
+.toggle { position:fixed; bottom:15px; right:15px; cursor:pointer; width:28px; height:28px; }
 .toggle img { width:28px; height:28px; transition:filter 0.3s; }
 body:not(.light) .toggle img { filter:invert(1); }
-
-/* Quote */
 .quote { font-size:14px; opacity:0.8; margin-top:5px; text-align:center; max-width:400px; }
 </style>
 </head>
-
 <body>
 <div class="top-bar">
     <div id="date"></div>
@@ -184,7 +112,7 @@ const weatherDiv = document.getElementById("weather");
 let weatherDetailsVisible = false;
 let lastWeatherData = null;
 
-// Load weather if previously allowed
+// Load weather automatically if previously allowed
 if(localStorage.getItem("weatherEnabled")==="true") loadWeather();
 
 async function loadWeather() {
@@ -214,12 +142,12 @@ async function loadWeather() {
 
 async function fetchWeather(lat, lon) {
     try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&temperature_unit=fahrenheit&timezone=auto`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const temp = Math.round(data.current.temperature_2m);
-        const code = data.current.weathercode;
+        // 1. Get current weather
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&temperature_unit=fahrenheit&timezone=auto`;
+        const weatherRes = await fetch(weatherUrl);
+        const weatherData = await weatherRes.json();
+        const temp = Math.round(weatherData.current.temperature_2m);
+        const code = weatherData.current.weathercode;
 
         const map = {
             0:"☀️ Clear",
@@ -233,9 +161,19 @@ async function fetchWeather(lat, lon) {
             80:"🌦️ Showers",
             95:"⛈️ Storm"
         };
+        const text = map[code]||"❓ Unknown";
 
-        lastWeatherData = { temp, text: map[code]||"❓ Unknown", emoji: (map[code]||"❓")[0] };
-        weatherDiv.textContent = `${map[code]||"❓ Unknown"} • ${temp}°F`;
+        // 2. Reverse geocode to get city
+        let cityName = "";
+        try {
+            const geoUrl = `https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}`;
+            const geoRes = await fetch(geoUrl);
+            const geoData = await geoRes.json();
+            cityName = geoData.address.city || geoData.address.town || geoData.address.village || geoData.address.county || "";
+        } catch {}
+        
+        lastWeatherData = { temp, text, city: cityName };
+        weatherDiv.textContent = `${text} • ${temp}°F` + (cityName?` • ${cityName}`:"");
     } catch {
         weatherDiv.textContent = "Weather fetch failed";
     }
@@ -246,11 +184,11 @@ weatherBtn.addEventListener("click", loadWeather);
 // Click weather to toggle details
 weatherDiv.addEventListener("click",()=>{
     if(!lastWeatherData) return;
-    const { temp, text } = lastWeatherData;
+    const { temp, text, city } = lastWeatherData;
     if(weatherDetailsVisible){
-        weatherDiv.textContent = `${text} • ${temp}°F`;
+        weatherDiv.textContent = `${text} • ${temp}°F` + (city?` • ${city}`:"");
     } else {
-        weatherDiv.textContent = `${text} • ${temp}°F (Live)`;
+        weatherDiv.textContent = `${text} • ${temp}°F` + (city?` • ${city} (Live)`:" (Live)");
     }
     weatherDetailsVisible = !weatherDetailsVisible;
 });
