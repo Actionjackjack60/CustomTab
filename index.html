@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>CustomTab</title>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
-
 <style>
 :root {
     --bg: #0d0d0f;
@@ -179,61 +178,58 @@ document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==
 const quotes=["Believe you can and you're halfway there.","Do something today that your future self will thank you for.","Happiness is not by chance, but by choice.","The best way to get started is to quit talking and begin doing.","Success is not final, failure is not fatal: It is the courage to continue that counts."];
 document.getElementById("quote").textContent=quotes[Math.floor(Math.random()*quotes.length)];
 
-// Weather
-const weatherBtn=document.getElementById("enableWeatherBtn");
-const weatherDiv=document.getElementById("weather");
-let weatherDetailsVisible=false;
-let lastWeatherData=null;
+// Weather (simpler, only lat/lon)
+const weatherBtn = document.getElementById("enableWeatherBtn");
+const weatherDiv = document.getElementById("weather");
+let weatherDetailsVisible = false;
+let lastWeatherData = null;
 
-weatherBtn.addEventListener("click", async (e)=>{
-    e.stopPropagation();
-    weatherBtn.disabled=true;
-    weatherBtn.textContent="Loading...";
-
+weatherBtn.addEventListener("click", async () => {
+    weatherBtn.disabled = true;
+    weatherBtn.textContent = "Loading...";
     try {
         const pos = await new Promise((resolve,reject)=> navigator.geolocation.getCurrentPosition(resolve,reject));
         const { latitude, longitude } = pos.coords;
 
-        const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
         const res = await fetch(url);
         const data = await res.json();
 
-        const temp=Math.round(data.current.temperature_2m);
-        const code=data.current.weathercode;
-        const feels=Math.round(data.current.apparent_temperature_2m);
-        const humidity=data.current.relativehumidity_2m;
-        const wind=Math.round(data.current.windspeed_10m);
-        const cityName=`Lat:${latitude.toFixed(1)}, Lon:${longitude.toFixed(1)}`;
+        const temp = Math.round(data.current.temperature_2m);
+        const code = data.current.weathercode;
+        const feels = Math.round(data.current.apparent_temperature_2m);
+        const humidity = data.current.relativehumidity_2m;
+        const wind = Math.round(data.current.windspeed_10m);
 
-        const map={0:["Clear","☀️"],1:["Mostly Clear","🌤️"],2:["Partly Cloudy","⛅"],3:["Cloudy","☁️"],45:["Fog","🌫️"],51:["Drizzle","🌦️"],61:["Rain","🌧️"],71:["Snow","❄️"],80:["Showers","🌦️"],95:["Storm","⛈️"]};
-        const text=map[code]?map[code][0]:"Unknown";
-        const emoji=map[code]?map[code][1]:"❓";
+        const map = {0:["Clear","☀️"],1:["Mostly Clear","🌤️"],2:["Partly Cloudy","⛅"],3:["Cloudy","☁️"],45:["Fog","🌫️"],51:["Drizzle","🌦️"],61:["Rain","🌧️"],71:["Snow","❄️"],80:["Showers","🌦️"],95:["Storm","⛈️"]};
+        const text = map[code]?map[code][0]:"Unknown";
+        const emoji = map[code]?map[code][1]:"❓";
+        const coordsText = `Lat:${latitude.toFixed(1)}, Lon:${longitude.toFixed(1)}`;
 
-        lastWeatherData={temp,feels,humidity,wind,text,emoji,city:cityName};
-        weatherBtn.style.display="none";
-        weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${cityName}`;
-
+        lastWeatherData = { temp, feels, humidity, wind, text, emoji, city: coordsText };
+        weatherBtn.style.display = "none";
+        weatherDiv.textContent = `${emoji} ${temp}°F • ${text} • ${coordsText}`;
     } catch {
-        weatherBtn.disabled=false;
-        weatherBtn.textContent="Enable Weather";
-        alert("Could not get location. Make sure the site is allowed to access your location.");
+        weatherBtn.disabled = false;
+        weatherBtn.textContent = "Enable Weather";
+        alert("Could not get location. Make sure you allowed it in the browser.");
     }
 });
 
 // Click weather to toggle details
-weatherDiv.addEventListener("click",()=>{
+weatherDiv.addEventListener("click", () => {
     if(!lastWeatherData) return;
     const { temp, feels, humidity, wind, text, emoji, city } = lastWeatherData;
     if(weatherDetailsVisible){
-        weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${city}`;
+        weatherDiv.textContent = `${emoji} ${temp}°F • ${text} • ${city}`;
     } else {
-        weatherDiv.textContent=`${emoji} ${temp}°F • ${text} • ${city}\nFeels: ${feels}°F, Humidity: ${humidity}%, Wind: ${wind} mph`;
+        weatherDiv.textContent = `${emoji} ${temp}°F • ${text} • ${city}\nFeels: ${feels}°F, Humidity: ${humidity}%, Wind: ${wind} mph`;
     }
     weatherDetailsVisible = !weatherDetailsVisible;
 });
 
 // Refresh every 5 min
-setInterval(()=>{if(lastWeatherData){weatherBtn.style.display="none";weatherBtn.click();}},300000);
+setInterval(()=>{ if(lastWeatherData){ weatherBtn.style.display="none"; weatherBtn.click(); } },300000);
 </script>
 </body>
 </html>
