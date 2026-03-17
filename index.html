@@ -152,7 +152,7 @@ body:not(.light) .toggle img { filter:invert(1); }
 </div>
 
 <script>
-// Time
+// --- Time ---
 function updateTime(){
     const now=new Date();
     document.getElementById('date').textContent=now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'});
@@ -161,24 +161,24 @@ function updateTime(){
 setInterval(updateTime,1000);
 updateTime();
 
-// Theme
+// --- Theme ---
 function toggleTheme(){
     document.body.classList.toggle("light");
     localStorage.setItem("theme",document.body.classList.contains("light")?"light":"dark");
 }
 if(localStorage.getItem("theme")==="light"){ document.body.classList.add("light"); }
 
-// Search
+// --- Search ---
 function formatQuery(q){ return q.trim().replace(/\s+/g,"+"); }
 function searchGoogle(){ const q=document.getElementById("searchInput").value; if(!q)return; window.open("https://www.google.com/search?q="+formatQuery(q),"_blank"); }
 function askAI(){ const q=document.getElementById("searchInput").value; if(!q)return; window.open("https://chatgpt.com/?q="+formatQuery(q),"_blank"); }
 document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")searchGoogle();});
 
-// Quotes
+// --- Quotes ---
 const quotes=["Believe you can and you're halfway there.","Do something today that your future self will thank you for.","Happiness is not by chance, but by choice.","The best way to get started is to quit talking and begin doing.","Success is not final, failure is not fatal: It is the courage to continue that counts."];
 document.getElementById("quote").textContent=quotes[Math.floor(Math.random()*quotes.length)];
 
-// Weather
+// --- Weather ---
 const weatherBtn = document.getElementById("enableWeatherBtn");
 const weatherDiv = document.getElementById("weather");
 let weatherDetailsVisible = false;
@@ -188,15 +188,27 @@ async function loadWeather() {
     weatherBtn.disabled = true;
     weatherBtn.textContent = "Loading...";
 
-    let latitude=40.7128, longitude=-74.0060; // fallback
+    // --- fallback coords ---
+    let latitude = 40.7128, longitude = -74.0060;
+
+    // --- try geolocation properly ---
     try {
-        const pos = await new Promise((resolve,reject)=> navigator.geolocation.getCurrentPosition(resolve,reject));
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-    } catch {
-        // fallback will be used
+        const pos = await new Promise((resolve,reject)=>{
+            navigator.geolocation.getCurrentPosition(
+                position => resolve(position),
+                error => reject(error),
+                { enableHighAccuracy:false, timeout:5000, maximumAge:0 }
+            );
+        });
+        if(pos && pos.coords){
+            latitude = pos.coords.latitude;
+            longitude = pos.coords.longitude;
+        }
+    } catch(err){
+        console.log("Geolocation failed or blocked, using fallback:", err.message);
     }
 
+    // --- fetch weather ---
     try {
         const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weathercode,apparent_temperature_2m,relativehumidity_2m,windspeed_10m&temperature_unit=fahrenheit&timezone=auto`;
         const res = await fetch(url);
@@ -219,14 +231,14 @@ async function loadWeather() {
     } catch {
         weatherBtn.disabled = false;
         weatherBtn.textContent = "Enable Weather";
-        alert("Weather fetch failed");
+        console.log("Weather fetch failed");
     }
 }
 
 weatherBtn.addEventListener("click", loadWeather);
 
-// Click weather to toggle details
-weatherDiv.addEventListener("click", () => {
+// --- Click weather to toggle details ---
+weatherDiv.addEventListener("click",()=>{
     if(!lastWeatherData) return;
     const { temp, feels, humidity, wind, text, emoji, city } = lastWeatherData;
     if(weatherDetailsVisible){
@@ -237,7 +249,7 @@ weatherDiv.addEventListener("click", () => {
     weatherDetailsVisible = !weatherDetailsVisible;
 });
 
-// Refresh every 5 min
+// --- Refresh every 5 min ---
 setInterval(()=>{ if(lastWeatherData){ weatherBtn.style.display="none"; loadWeather(); } },300000);
 </script>
 </body>
